@@ -4,12 +4,16 @@
             [hosttest.gamestats :as gamestats]
             [hosttest.colliders :as colliders]))
 
+(defonce gamestate (atom '()))
 
 
 
 
-
-
+(defn updategamestate
+  [statelist]
+  (swap! gamestate (fn [_] statelist))
+  statelist
+  )
 
 
 
@@ -190,15 +194,16 @@
   (if (reset? ball)
     (scoreadd statelist)
     ;map though the statelist
-    (map (fn [state] (let [role (:role state)]
-                     (cond
-                       (and (= role "player") (not gamestats/aipower)) (playermover state)
-                       (and (= role "player") gamestats/aipower) (enemyMover (second statelist) (first statelist))
-                       (= role "ball") (ballmover statelist)
-                       (= role "enemy") (enemyMover (second statelist) (nth statelist 2))
-                       :else state))) statelist))))
+    (updategamestate (map (fn [state] (let [role (:role state)]
+                                        (cond
+                                          (and (= role "player") (not gamestats/aipower)) (playermover state)
+                                          (and (= role "player") gamestats/aipower) (enemyMover (second statelist) (first statelist))
+                                          (= role "ball") (ballmover statelist)
+                                          (= role "enemy") (enemyMover (second statelist) (nth statelist 2))
+                                          :else state))) statelist)))))
 
-
+(defn gamestarter
+  []
 (q/defsketch lala
              :title "tadaaa"
              :size [800 600]
@@ -207,3 +212,4 @@
              :update update_main
              :features [:keep-on-top]
              :middleware [m/fun-mode])
+  )

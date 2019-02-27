@@ -7,7 +7,8 @@
                  [quil "2.8.0"]
                  [ring/ring-core "1.7.1"]
                  [ring/ring-jetty-adapter "1.7.1"]
-                 [compojure "1.6.1"]]
+                 [compojure "1.6.1"]
+                 [selmer "1.0.2"]]
   :main ^:skip-aot hosttest.server
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

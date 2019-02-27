@@ -2,7 +2,9 @@
   (:require [clojure.java.io :as io]
             [ring.adapter.jetty :as srv]
             [compojure.core :refer :all]
-            [compojure.route :as route])
+            [hosttest.MyGame :as game]
+            [compojure.route :as route]
+            [selmer.parser :as selmer])
   (:import (java.net InetAddress ServerSocket Socket SocketException)
            (java.io OutputStream OutputStreamWriter PrintWriter BufferedReader InputStreamReader)
            (clojure.lang LineNumberingPushbackReader))
@@ -15,6 +17,7 @@
      {:role "ball" :type "object" :color 255 :x 200 :y 200 :velX 5 :velY 5}
      {:role "enemy" :type "entity" :color 255 :x 760 :y 200 :velX 6 :velY 6}
      {:role "score" :type "logic" :player1 0 :player2 0}))
+
 
 
 (defn- on-thread [f]
@@ -126,6 +129,20 @@
 
 
   )
+(defn testroute
+  [id]
+    (selmer/render-file "firstpage.html" {:name id})
+  )
+
+(defn clearcommandqueue
+  [_]
+  (swap! commandolist (fn [_] ([])))
+  {:status 200
+   :headers {"Content-Type" "text/html"}
+   :body "noget andet \n"}
+  )
+
+
 (defn commandqueue
   [_]
   {:status 200 :body (pr-str @commandolist)}
@@ -137,11 +154,19 @@
   (println @commandolist)
   {:status 200
    :headers {"Content-Type" "text/html"}
-   :body "noget andet ??????\n"})
+   :body "noget andet \n"})
+
+(defn showgame
+  [_]
+  {:status 200 :body (pr-str @game/gamestate)}
+  )
 
 (defroutes myroutes
-           (GET "/cmd" request (cmdhandler request)  )
-           (GET "/cmdqueue" request (commandqueue request)))
+           (GET "/showgame" request (showgame request))
+           (GET "/cmd" request (cmdhandler request))
+           (GET "/cmdqueue" request (commandqueue request))
+           (GET "/test/:id" [id] (testroute id))
+           (GET "/clearcmd" request (clearcommandqueue request)))
 
 
 
@@ -153,7 +178,8 @@
 
 (defn -main
   []
-  (future (srv/run-jetty  #'ourhandler {:port 9999}))
+  (future (srv/run-jetty  #'ourhandler {:port 8082}))
+  (future (game/gamestarter))
   (println "STARTED")
 
-  (create-server 9000 operator))
+  #_(create-server 9000 operator))
