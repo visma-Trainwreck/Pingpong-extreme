@@ -4,13 +4,16 @@
             [compojure.core :refer :all]
             [hosttest.MyGame :as game]
             [compojure.route :as route]
-            [selmer.parser :as selmer])
+            [selmer.parser :as selmer]
+            [ring.middleware.params :refer [wrap-params]]
+            [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+            )
   (:import (java.net InetAddress ServerSocket Socket SocketException)
            (java.io OutputStream OutputStreamWriter PrintWriter BufferedReader InputStreamReader)
            (clojure.lang LineNumberingPushbackReader))
   (:use [clojure.main :only (repl)]))
 
-(defonce commandolist (atom []))
+(defonce cmdlist (atom []))
 
 (def mock-state
   '({:role "player" :type "entity" :color 255 :x 20 :y 100 :velX 6 :velY 6}
@@ -121,14 +124,8 @@
           (.flush writer)
           (Thread/sleep 1000)
 
-    (recur socket))
+    (recur socket))))
 
-    )
-
-
-
-
-  )
 (defn testroute
   [id]
     (selmer/render-file "firstpage.html" {:name id})
@@ -136,55 +133,56 @@
 
 (defn clearcommandqueue
   [_]
-  (swap! commandolist (fn [_] ([])))
+  (swap! cmdlist (fn [_] ([])))
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body "noget andet \n"}
   )
 
-
-(defn commandqueue
+(defn cmdqueue
   [_]
-  {:status 200 :body (pr-str @commandolist)}
-  )
+  {:status 200 :body (pr-str @cmdlist)})
+
+(defn parse-cmd
+  [{{:keys [player action] :as params} :params}]
+  (println params "|" player action)
+  (when (and player action)
+    {:player player
+     :action action}))
+
 (defn cmdhandler
   [request]
-  #_(clojure.pprint/pprint (keys request))
-  (swap! commandolist (fn [xs] (conj xs (:query-string request))))
-  (println @commandolist)
+  (when-let [cmd (parse-cmd request)]
+    (swap! cmdlist conj cmd))
+  (println (take 2 (reverse @cmdlist)))
   {:status 200
    :headers {"Content-Type" "text/html"}
    :body "noget andet \n"})
 
 (defn showgame
   [_]
-  {:status 200 :body (pr-str @game/gamestate)}
-  )
+  {:status 200 :body (pr-str @game/gamestate)})
 
-(defn gamecommand
-  [request]
-  (let [player ]))
+
 
 (defroutes myroutes
            (GET "/showgame" request (showgame request))
            (GET "/cmd" request (cmdhandler request))
-           (GET "/cmdqueue" request (commandqueue request))
+           (GET "/cmdqueue" request (cmdqueue request))
            (GET "/test/:id" [id] (testroute id))
            (GET "/clearcmd" request (clearcommandqueue request))
-           (GET "/gamecommand" request ))
-
+           (route/not-found "Page not found"))
 
 
 (defn ourhandler
   [x]
-    (println "yderste handler")
-    (#'myroutes x)
-  )
+  (((comp wrap-params wrap-keyword-params ) #'myroutes)
+    x))
 
 (defn -main
   []
   (future (srv/run-jetty  #'ourhandler {:port 8082}))
-  (future (game/gamestarter))
+  #_(future (game/gamestarter))
   (println "STARTED")
 
   #_(create-server 9000 operator))
