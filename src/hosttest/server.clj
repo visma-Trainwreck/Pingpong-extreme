@@ -149,7 +149,7 @@
   )
 (defn cmdhandler
   [request]
-  (clojure.pprint/pprint (keys request))
+  #_(clojure.pprint/pprint (keys request))
   (swap! commandolist (fn [xs] (conj xs (:query-string request))))
   (println @commandolist)
   {:status 200
@@ -161,12 +161,17 @@
   {:status 200 :body (pr-str @game/gamestate)}
   )
 
+(defn gamecommand
+  [request]
+  (let [player ]))
+
 (defroutes myroutes
            (GET "/showgame" request (showgame request))
            (GET "/cmd" request (cmdhandler request))
            (GET "/cmdqueue" request (commandqueue request))
            (GET "/test/:id" [id] (testroute id))
-           (GET "/clearcmd" request (clearcommandqueue request)))
+           (GET "/clearcmd" request (clearcommandqueue request))
+           (GET "/gamecommand" request ))
 
 
 
