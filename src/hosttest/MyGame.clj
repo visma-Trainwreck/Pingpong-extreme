@@ -27,9 +27,9 @@
     (if (= player "left")
       (cond
         (= dir "up")
-          (swap! currentactions conj {:leftplayer (* -1 gamestats/playerspeed)})
+        (swap! currentactions conj {:leftplayer (* -1 gamestats/playerspeed)})
         (= dir "down")
-          (swap! currentactions conj {:leftplayer gamestats/playerspeed}))
+        (swap! currentactions conj {:leftplayer gamestats/playerspeed}))
 
       (cond
         (= dir "up")
@@ -47,22 +47,22 @@
 (defn scoreadd
   [statelist]
 
-    (map (fn [state] (cond
-                       (= "score" (:role state)) (let [ball (first (filter (fn [state] (if (= "ball" (:role state)) state nil))statelist))]
-                                                   (if (< (:x ball) -20)
-                                                     (conj state {:player2 (+ 1 (:player2 state))})
-                                                     (conj state {:player1 (+ 1 (:player1 state))})))
-                       (= "player" (:role state)) (first gamestats/mock-state)
-                       (= "enemy" (:role state)) (nth gamestats/mock-state 2)
-                       (= "ball" (:role state)) (let [ball (second gamestats/mock-state)
-                                                      ranvelX (+ 3 (rand-int 8))
-                                                      ranvelY (+ 1 (rand-int 4))
-                                                      dir (if (= 1 (- 1 (rand-int 2)))
-                                                            1
-                                                            -1)]
-                                                  (conj ball {:velX (* dir ranvelX) :velY ranvelY}))
-                       :else state
-                       ))statelist)
+  (map (fn [state] (cond
+                     (= "score" (:role state)) (let [ball (first (filter (fn [state] (if (= "ball" (:role state)) state nil)) statelist))]
+                                                 (if (< (:x ball) -20)
+                                                   (conj state {:player2 (+ 1 (:player2 state))})
+                                                   (conj state {:player1 (+ 1 (:player1 state))})))
+                     (= "player" (:role state)) (first gamestats/mock-state)
+                     (= "enemy" (:role state)) (nth gamestats/mock-state 2)
+                     (= "ball" (:role state)) (let [ball (second gamestats/mock-state)
+                                                    ranvelX (+ 3 (rand-int 8))
+                                                    ranvelY (+ 1 (rand-int 4))
+                                                    dir (if (= 1 (- 1 (rand-int 2)))
+                                                          1
+                                                          -1)]
+                                                (conj ball {:velX (* dir ranvelX) :velY ranvelY}))
+                     :else state
+                     )) statelist)
   )
 
 
@@ -115,13 +115,13 @@
         velX (Math/sqrt (Math/pow (:velX state) 2))
         velY (:velY state)]
 
-    (dorun  (cond
-        (> 15 velX) (q/fill  0 255 255)
-        (and (<= 15 velX) (> 10 velX)) (q/fill 0 125 255)
-        (and (<= 10 velX) (> 4 velX)) (q/fill 0 0 255)
-        :else (q/fill 0 0 0))
-    (q/rect x y (first gamestats/ballsize) (second gamestats/ballsize))
-    )))
+    (dorun (cond
+             (> 15 velX) (q/fill 0 255 255)
+             (and (<= 15 velX) (> 10 velX)) (q/fill 0 125 255)
+             (and (<= 10 velX) (> 4 velX)) (q/fill 0 0 255)
+             :else (q/fill 0 0 0))
+           (q/rect x y (first gamestats/ballsize) (second gamestats/ballsize))
+           )))
 
 
 
@@ -164,9 +164,9 @@
 
   (let [state (cond
                 (= (:role state) "player")
-                  (conj state {:y (:leftplayer currentactions)})
+                (conj state {:y (:leftplayer currentactions)})
                 (= (:role state) "enemy")
-                  (conj state {:y (:rightplayer currentactions)}))]
+                (conj state {:y (:rightplayer currentactions)}))]
 
     state
     )
@@ -180,9 +180,9 @@
   ;keylistener! If a key is being pressed AND its the w or s key, then we do stuff, else we return the old state...and not move.
   ;update! it also sets the new velocity in the state depentant on which key is pressed!
   (let [state1 (cond
-                (and (q/key-pressed?) (= (q/raw-key) \w)) (conj state {:y (- (:y state) gamestats/playerspeed) :velY gamestats/playerspeed})
-                (and (q/key-pressed?) (= (q/raw-key) \s)) (conj state {:y (+ (:y state) gamestats/playerspeed) :velY (* -1 gamestats/playerspeed)})
-                :else (conj state { :velY 0}))]
+                 (and (q/key-pressed?) (= (q/raw-key) \w)) (conj state {:y (- (:y state) gamestats/playerspeed) :velY gamestats/playerspeed})
+                 (and (q/key-pressed?) (= (q/raw-key) \s)) (conj state {:y (+ (:y state) gamestats/playerspeed) :velY (* -1 gamestats/playerspeed)})
+                 :else (conj state {:velY 0}))]
     (colliders/outofbounds state1))
   )
 
@@ -199,15 +199,15 @@
                                                       (< enemyY 200) (conj enemy {:y (+ (:y enemy) gamestats/playerspeed)})
                                                       (> enemyY 200) (conj enemy {:y (- (:y enemy) gamestats/playerspeed)})
                                                       :else enemy)
-                (and (= "player" role) (pos-int? ballv))(cond
-                                                          (< enemyY 200) (conj enemy {:y (+ (:y enemy) gamestats/playerspeed)})
-                                                          (> enemyY 200) (conj enemy {:y (- (:y enemy) gamestats/playerspeed)})
-                                                          :else enemy)
+                (and (= "player" role) (pos-int? ballv)) (cond
+                                                           (< enemyY 200) (conj enemy {:y (+ (:y enemy) gamestats/playerspeed)})
+                                                           (> enemyY 200) (conj enemy {:y (- (:y enemy) gamestats/playerspeed)})
+                                                           :else enemy)
 
                 (< (- ballY 50) enemyY) (conj enemy {:y (- (:y enemy) gamestats/playerspeed)})
                 (> (- ballY 50) enemyY) (conj enemy {:y (+ (:y enemy) gamestats/playerspeed)})
                 :else enemy)]
-      (colliders/outofbounds state)
+    (colliders/outofbounds state)
     ))
 
 (defn ballmover
@@ -228,26 +228,26 @@
 
 (defn update_main [statelist]
   ; check if the ball is out of bounds, and reset the state if it is!
- (let [ball (first (filter (fn [state] (if (= "ball" (:role state)) state nil)) statelist))]
-  (if (reset? ball)
-    (scoreadd statelist)
-    ;map though the statelist and update the gamestats for outside to see
-    (updategamestate (map (fn [state] (let [role (:role state)]
-                                        (cond
-                                          (and (= role "player") (not gamestats/aipower)) (newplayermower state)
-                                          (and (= role "player") gamestats/aipower) (enemyMover (second statelist) (first statelist))
-                                          (= role "ball") (ballmover statelist)
-                                          (= role "enemy") (enemyMover (second statelist) (nth statelist 2))
-                                          :else state))) statelist)))))
+  (let [ball (first (filter (fn [state] (if (= "ball" (:role state)) state nil)) statelist))]
+    (if (reset? ball)
+      (scoreadd statelist)
+      ;map though the statelist and update the gamestats for outside to see
+      (updategamestate (map (fn [state] (let [role (:role state)]
+                                          (cond
+                                            (and (= role "player") (not gamestats/aipower)) (newplayermower state)
+                                            (and (= role "player") gamestats/aipower) (enemyMover (second statelist) (first statelist))
+                                            (= role "ball") (ballmover statelist)
+                                            (= role "enemy") (enemyMover (second statelist) (nth statelist 2))
+                                            :else state))) statelist)))))
 
 (defn gamestarter
   []
-(q/defsketch lala
-             :title "tadaaa"
-             :size [800 600]
-             :setup setup
-             :draw drawIt
-             :update update_main
-             :features [:keep-on-top]
-             :middleware [m/fun-mode])
+  (q/defsketch lala
+               :title "tadaaa"
+               :size [800 600]
+               :setup setup
+               :draw drawIt
+               :update update_main
+               :features [:keep-on-top]
+               :middleware [m/fun-mode])
   )
