@@ -4,11 +4,14 @@
             [compojure.core :refer :all]
             [hosttest.MyGame :as game]
             [compojure.route :as route]
-            [selmer.parser :as selmer])
+            [selmer.parser :as selmer]
+            [clojure.string :as str])
   (:import (java.net InetAddress ServerSocket Socket SocketException)
            (java.io OutputStream OutputStreamWriter PrintWriter BufferedReader InputStreamReader)
            (clojure.lang LineNumberingPushbackReader))
-  (:use [clojure.main :only (repl)]))
+  (:use [clojure.main :only (repl)]
+        #_['ring.util.codec]
+        #_['clojure.walk]))
 
 (defonce commandolist (atom []))
 
@@ -101,10 +104,7 @@
    (create-server port socket-repl)))
 
 
-(defn startgame
-  [s]
 
-  )
 
 
 (defn operator
@@ -121,14 +121,15 @@
           (.flush writer)
           (Thread/sleep 1000)
 
-    (recur socket))
-
-    )
+    (recur socket))))
 
 
+(defn request-to-keywords [req]
+  (into {} (for [[_ k v] (re-seq #"([^&=]+)=([^&]+)" req)]
+             [(keyword k) v])))
 
 
-  )
+
 (defn testroute
   [id]
     (selmer/render-file "firstpage.html" {:name id})
@@ -149,7 +150,7 @@
   )
 (defn cmdhandler
   [request]
-  #_(clojure.pprint/pprint (keys request))
+  (clojure.pprint/pprint (keys request))
   (swap! commandolist (fn [xs] (conj xs (:query-string request))))
   (println @commandolist)
   {:status 200
@@ -161,9 +162,17 @@
   {:status 200 :body (pr-str @game/gamestate)}
   )
 
+
+
+
 (defn gamecommand
   [request]
-  (let [player ]))
+  (let [keywords  (request-to-keywords (:query-string request)) ]
+
+    (println keywords)
+
+
+    {:status 200 :body (str  (:leftplayer @game/currentactions))}))
 
 (defroutes myroutes
            (GET "/showgame" request (showgame request))
@@ -171,20 +180,19 @@
            (GET "/cmdqueue" request (commandqueue request))
            (GET "/test/:id" [id] (testroute id))
            (GET "/clearcmd" request (clearcommandqueue request))
-           (GET "/gamecommand" request ))
+           (GET "/gamecommand" request (gamecommand request)))
 
 
 
 (defn ourhandler
   [x]
-    (println "yderste handler")
     (#'myroutes x)
   )
 
 (defn -main
   []
-  (future (srv/run-jetty  #'ourhandler {:port 8082}))
-  (future (game/gamestarter))
+  (future (srv/run-jetty  #'ourhandler {:port 8083}))
+  #_(future (game/gamestarter))
   (println "STARTED")
 
   #_(create-server 9000 operator))

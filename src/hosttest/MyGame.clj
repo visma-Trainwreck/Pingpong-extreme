@@ -5,6 +5,7 @@
             [hosttest.colliders :as colliders]))
 
 (defonce gamestate (atom '()))
+(defonce currentactions (atom {:leftplayer 0 :rightplayer 0}))
 
 
 
@@ -15,6 +16,31 @@
   statelist
   )
 
+
+
+(defn insertclientaction
+  [keywords]
+
+  (let [player (:player keywords)
+        dir (:action keywords)]
+
+    (if (= player "left")
+      (cond
+        (= dir "up")
+          (swap! currentactions conj {:leftplayer (* -1 gamestats/playerspeed)})
+        (= dir "down")
+          (swap! currentactions conj {:leftplayer gamestats/playerspeed}))
+
+      (cond
+        (= dir "up")
+        (swap! currentactions conj {:rightplayer (* -1 gamestats/playerspeed)})
+        (= dir "down")
+        (swap! currentactions conj {:rightplayer gamestats/playerspeed}))
+
+      )
+    )
+
+  )
 
 
 
@@ -133,7 +159,19 @@
            (/ (q/height) 2)]
           (q/rect (:x state) (:y state) 20 20)))))
 
+(defn newplayermower
+  [state]
 
+  (let [state (cond
+                (= (:role state) "player")
+                  (conj state {:y (:leftplayer currentactions)})
+                (= (:role state) "enemy")
+                  (conj state {:y (:rightplayer currentactions)}))]
+
+    state
+    )
+
+  )
 
 
 
@@ -193,10 +231,10 @@
  (let [ball (first (filter (fn [state] (if (= "ball" (:role state)) state nil)) statelist))]
   (if (reset? ball)
     (scoreadd statelist)
-    ;map though the statelist
+    ;map though the statelist and update the gamestats for outside to see
     (updategamestate (map (fn [state] (let [role (:role state)]
                                         (cond
-                                          (and (= role "player") (not gamestats/aipower)) (playermover state)
+                                          (and (= role "player") (not gamestats/aipower)) (newplayermower state)
                                           (and (= role "player") gamestats/aipower) (enemyMover (second statelist) (first statelist))
                                           (= role "ball") (ballmover statelist)
                                           (= role "enemy") (enemyMover (second statelist) (nth statelist 2))
