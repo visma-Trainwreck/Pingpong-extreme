@@ -1,6 +1,7 @@
 (ns hosttest.server
   (:require [ring.adapter.jetty :as srv]
             [compojure.core :refer :all]
+            [hosttest.cmdmonitor :as monitor]
             [hosttest.MyGame :as game]
             [compojure.route :as route]
             [selmer.parser :as selmer]
@@ -31,17 +32,18 @@
 
 (defn parse-cmd
   [{{:keys [player action] :as params} :params}]
-  (println params "|" player action)
+  #_(println params "|" player action)
   (when (and player action)
     {:player player
-     :action action}))
+     :action action
+     :ts (System/currentTimeMillis)}))
 
 (defn cmdhandler
   [request]
   (when-let [cmd (parse-cmd request)]
     (swap! cmdlist conj cmd))
-  (println
-    (take 2 (reverse @cmdlist)))
+  #_(println
+      (take 2 (reverse @cmdlist)))
   {:status  200
    :headers {"Content-Type" "text/html"}
    :body    "noget andet \n"})
@@ -49,8 +51,6 @@
 (defn showgame
   [_]
   {:status 200 :body (pr-str @game/gamestate)})
-
-
 
 (defroutes myroutes
            (GET "/showgame" request (showgame request))
@@ -60,7 +60,6 @@
            (GET "/clearcmd" request (clearcommandqueue request))
            (route/not-found "Page not found"))
 
-
 (defn ourhandler
   [x]
   (((comp wrap-params wrap-keyword-params) #'myroutes)
@@ -69,6 +68,6 @@
 (defn -main
   []
   (future (srv/run-jetty #'ourhandler {:port 8082}))
-  (future (game/gamestarter))
-  (println "STARTED")
-  )
+  (future (monitor/run-monitor! cmdlist))
+  #_(future (game/gamestarter))
+  (println "STARTED"))
