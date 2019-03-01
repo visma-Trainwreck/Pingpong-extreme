@@ -44,6 +44,8 @@
 
 
 
+
+
 (defn scoreadd
   [statelist]
 

@@ -40,7 +40,8 @@
   [request]
   (when-let [cmd (parse-cmd request)]
     (swap! cmdlist conj cmd))
-  (println (take 2 (reverse @cmdlist)))
+  (println
+    (take 2 (reverse @cmdlist)))
   {:status  200
    :headers {"Content-Type" "text/html"}
    :body    "noget andet \n"})
@@ -68,6 +69,6 @@
 (defn -main
   []
   (future (srv/run-jetty #'ourhandler {:port 8082}))
-  #_(future (game/gamestarter))
+  (future (game/gamestarter))
   (println "STARTED")
   )
