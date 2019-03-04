@@ -26,6 +26,10 @@
    :body    "noget andet \n"}
   )
 
+(defn testsite
+  [request]
+  (selmer/render-file "firstpage.html" request))
+
 (defn cmdqueue
   [_]
   {:status 200 :body (pr-str @cmdlist)})
@@ -57,6 +61,7 @@
            (GET "/cmd" request (cmdhandler request))
            (GET "/cmdqueue" request (cmdqueue request))
            (GET "/test/:id" [id] (testroute id))
+           (GET "/test" request (testsite request))
            (GET "/clearcmd" request (clearcommandqueue request))
            (route/not-found "Page not found"))
 

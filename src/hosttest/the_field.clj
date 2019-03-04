@@ -2,7 +2,7 @@
   (:require [quil.core :as q]
             [quil.middleware :as m]
             [hosttest.gamestats :as gamestats]
-            [hosttest.cmdmonitor :as monitor]
+            #_[hosttest.cmdmonitor :as monitor]
             [hosttest.server :as game]))
 
 
@@ -12,7 +12,7 @@
 
 (defn read_command
   []
-  (game)
+
   )
 
 
