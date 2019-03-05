@@ -2,40 +2,35 @@
   (:require [quil.core :as q]
             [quil.middleware :as m]
             [hosttest.gamestats :as gamestats]
-            #_[hosttest.cmdmonitor :as monitor]
-            [hosttest.server :as game]))
-
-
-
-
-
-
-(defn read_command
-  []
-
-  )
-
+    #_[hosttest.cmdmonitor :as monitor]))
 
 (defn setup
   []
   (q/frame-rate 120)
   (q/color-mode :hsb)
-  {:ball 10}
-  )
+  {:ball 10})
 
+(defn fib
+  [n]
+  (if (< n 2)
+    1
+    (+ (fib (dec n)) (- n 2))))
 
 (defn update_state
   [state]
-  state
-  )
+  @hosttest.cmdmonitor/gamestate)
 
 (defn draw
-  [_]
-  (q/fill 255 255 255)
-  (q/rect 200 200 50 50))
+  [gamestate]
+  (q/clear)
+  (dorun
+    (map
+      (fn [player]
+        (q/fill 255 255 255)
+        (q/rect 100 (:position (second player)) 50 50))(:players gamestate))))
 
-
-
+(defn start-game
+  []
   (q/defsketch kek
                :title "tadaaa"
                :size [800 600]
@@ -43,6 +38,4 @@
                :draw draw
                :update update_state
                :features [:keep-on-top]
-               :middleware [m/fun-mode])
-
-
+               :middleware [m/fun-mode]))

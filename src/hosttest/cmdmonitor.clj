@@ -16,7 +16,7 @@
                                                           "up" 20
                                                           "down" -20
                                                           0))
-                                             pos (min pos 100)
+                                             pos (min pos 1000)
                                              pos (max pos 0)]
                                          (assoc m :t t :banan 42
                                                   :position pos
@@ -68,8 +68,8 @@
   [cmdlist-ref]
   (reset-game!)
   (while (has-unprocessed-cmds cmdlist-ref)
-    (Thread/sleep 100)
-    )
+    (Thread/sleep 100))
+
   @gamestate)
 
 (defn run-monitor!

@@ -7,7 +7,8 @@
             [selmer.parser :as selmer]
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
-            )
+            [hosttest.the-field :as field])
+
   (:use [clojure.main :only (repl)]))
 
 (defonce cmdlist (atom []))
@@ -15,16 +16,16 @@
 
 (defn testroute
   [id]
-  (selmer/render-file "firstpage.html" {:name id})
-  )
+  (selmer/render-file "firstpage.html" {:name id}))
+
 
 (defn clearcommandqueue
   [_]
   (swap! cmdlist (fn [_] ([])))
   {:status  200
    :headers {"Content-Type" "text/html"}
-   :body    "noget andet \n"}
-  )
+   :body    "noget andet \n"})
+
 
 (defn testsite
   [request]
@@ -67,12 +68,11 @@
 
 (defn ourhandler
   [x]
-  (((comp wrap-params wrap-keyword-params) #'myroutes)
-    x))
+  (((comp wrap-params wrap-keyword-params) #'myroutes) x))
 
 (defn -main
   []
   (future (srv/run-jetty #'ourhandler {:port 8082}))
   (future (monitor/run-monitor! cmdlist))
-  #_(future (game/gamestarter))
+  #_(future (field/start-game))
   (println "STARTED"))
