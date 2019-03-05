@@ -10,7 +10,7 @@
         t (- ts t0)]
     (assoc state :t0 t0
                  :players (update-in players [player]
-                                     (fn [{:keys [banan position] :as m}]
+                                     (fn [{:keys [banan position actionls] :as m}]
                                        (let [pos (or position 50)
                                              pos (+ pos (case action
                                                           "up" 20
@@ -19,7 +19,8 @@
                                              pos (min pos 100)
                                              pos (max pos 0)]
                                          (assoc m :t t :banan 42
-                                                  :position pos))))
+                                                  :position pos
+                                                  :actionls (conj actionls action)))))
                  #_(conj (or players #{}) player)
                  :ts ts
                  :t t)))
